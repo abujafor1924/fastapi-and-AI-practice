@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from app.models.task import Task
-from app.schemas.task import TaskCreate
+from app.schemas.task import TaskCreate, TaskUpdate
+
 
 # --- TASK CRUD OPERATIONS ---
 # Handles the direct interaction with the PostgreSQL database for the Task model.
@@ -47,3 +48,29 @@ def update_task_status(db: Session, task_id: int, status: str, result: str | Non
         db.commit()
         db.refresh(db_task)
     return db_task
+
+def update_task(db: Session, task_id: int, task_update: TaskUpdate) -> Task | None:
+    """
+    Updates a task's title and description.
+    """
+    db_task = get_task(db, task_id)
+    if db_task:
+        if task_update.title is not None:
+            db_task.title = task_update.title
+        if task_update.description is not None:
+            db_task.description = task_update.description
+        db.commit()
+        db.refresh(db_task)
+    return db_task
+
+def delete_task(db: Session, task_id: int) -> bool:
+    """
+    Deletes a task from the database.
+    """
+    db_task = get_task(db, task_id)
+    if db_task:
+        db.delete(db_task)
+        db.commit()
+        return True
+    return False
+

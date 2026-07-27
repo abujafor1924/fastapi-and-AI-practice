@@ -16,6 +16,14 @@ class TaskCreate(TaskBase):
     """
     pass
 
+class TaskUpdate(BaseModel):
+    """
+    Schema for updating a task's user-facing details.
+    """
+    title: str | None = Field(None, min_length=1, max_length=100, description="The title of the background task")
+    description: str | None = Field(None, max_length=255, description="An optional detailed description of the task")
+
+
 class TaskResponse(TaskBase):
     """
     Schema representing the task response. Exposes the DB status, result, and ownership.

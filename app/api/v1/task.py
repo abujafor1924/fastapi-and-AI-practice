@@ -1,9 +1,11 @@
+# pyrefly: ignore [missing-import]
 from fastapi import APIRouter, Depends, HTTPException, status
+# pyrefly: ignore [missing-import]
 from sqlalchemy.orm import Session
 from app.dependencies import get_db, get_current_user
 from app.models.user import User
-from app.schemas.task import TaskCreate, TaskResponse
-from app.crud.task import create_task, get_task, get_user_tasks
+from app.schemas.task import TaskCreate, TaskResponse, TaskUpdate
+from app.crud.task import create_task, get_task, get_user_tasks, update_task, delete_task
 from app.tasks.background_tasks import process_heavy_task
 from app.core.cache import cache
 
@@ -105,3 +107,49 @@ def read_task(
             detail="Task not found or access denied"
         )
     return db_task
+
+@router.put("/{task_id}", response_model=TaskResponse)
+def update_task_endpoint(
+    task_id: int,
+    task_update: TaskUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Updates the title and/or description of a specific task.
+    Enforces security: Users cannot update tasks belonging to other users.
+    Invalidates the user's tasks cache in Redis.
+    """
+    db_task = get_task(db, task_id)
+    if not db_task or db_task.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found or access denied"
+        )
+    
+    updated_db_task = update_task(db, task_id, task_update)
+    cache.delete(f"user_tasks:{current_user.id}:0:100")
+    return updated_db_task
+
+@router.delete("/{task_id}")
+def delete_task_endpoint(
+    task_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Deletes a specific task.
+    Enforces security: Users cannot delete tasks belonging to other users.
+    Invalidates the user's tasks cache in Redis.
+    """
+    db_task = get_task(db, task_id)
+    if not db_task or db_task.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found or access denied"
+        )
+    
+    delete_task(db, task_id)
+    cache.delete(f"user_tasks:{current_user.id}:0:100")
+    return {"message": "Task deleted successfully"}
+
