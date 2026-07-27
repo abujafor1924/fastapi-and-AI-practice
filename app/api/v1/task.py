@@ -1,5 +1,5 @@
 # pyrefly: ignore [missing-import]
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Path, Query
 # pyrefly: ignore [missing-import]
 from sqlalchemy.orm import Session
 from app.dependencies import get_db, get_current_user
@@ -47,8 +47,14 @@ def create_new_task(
 
 @router.get("/", response_model=list[TaskResponse])
 def read_tasks(
-    skip: int = 0,
-    limit: int = 100,
+    # --- QUERY PARAMETERS DEMO ---
+    # In Django: You fetch query params via `request.GET.get('skip')` or `request.query_params.get('skip')`.
+    #            You must manually convert them from string to integer and handle validation/casting exceptions yourself.
+    # In FastAPI: Declaring parameters that are not part of the route URL template and are primitive types (like int, str)
+    #             tells FastAPI to parse them from the URL query string automatically (e.g. ?skip=10&limit=5).
+    #             The Query() class adds extra validation constraints (like ge=0, le=100) and describes them for Swagger.
+    skip: int = Query(default=0, ge=0, description="Pagination skip (offset) value. Must be greater than or equal to 0."),
+    limit: int = Query(default=100, ge=1, le=100, description="Pagination limit (size) value. Range: 1-100."),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -92,7 +98,12 @@ def read_tasks(
 
 @router.get("/{task_id}", response_model=TaskResponse)
 def read_task(
-    task_id: int,
+    # --- PATH PARAMETERS DEMO ---
+    # In Django: Configured in urls.py (e.g. `path('tasks/<int:task_id>/')`) and passed as arguments to the view function.
+    # In FastAPI: You declare variables in curly braces in the route path `@router.get("/{task_id}")`.
+    #             FastAPI inspects the route parameters and automatically maps them to function arguments with the same name.
+    #             The Path() helper lets us enforce validation constraints (e.g., ID must be greater than or equal to 1).
+    task_id: int = Path(..., ge=1, description="The unique database ID of the task to retrieve."),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):

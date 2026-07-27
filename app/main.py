@@ -7,7 +7,10 @@ from app.api.v1.user import router as user_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.task import router as task_router
 from app.api.v1.ws import router as ws_router
+from app.api.v1.upload import router as upload_router
 from app.core.websocket import redis_pubsub_listener
+from fastapi.staticfiles import StaticFiles
+import os
 
 # --- MODERN FASTAPI LIFESPAN ---
 # The lifespan context manager replaces old @app.on_event("startup"/"shutdown").
@@ -47,6 +50,14 @@ app.include_router(auth_router, prefix="/api/v1")
 app.include_router(user_router, prefix="/api/v1")
 app.include_router(task_router, prefix="/api/v1")
 app.include_router(ws_router, prefix="/api/v1")
+app.include_router(upload_router, prefix="/api/v1")
+
+# Mount the static directory to serve static assets and uploaded files.
+# In Django: You define `MEDIA_URL = '/media/'` and `MEDIA_ROOT` settings, and then append it to `urlpatterns`.
+# In FastAPI: You explicitly instantiate and mount a StaticFiles instance at a specific path prefix.
+STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "static")
+os.makedirs(STATIC_DIR, exist_ok=True)
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 @app.get("/")
