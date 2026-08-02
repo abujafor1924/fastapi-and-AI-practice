@@ -45,3 +45,8 @@ def delete_user(db: Session, user_id: int) -> bool:
         db.commit()
         return True
     return False
+
+
+
+
+

@@ -1,0 +1,26 @@
+[
+    {
+        "Name":"Jafor",
+        "Age":24,
+        "Department":"AI",
+        "Salary":50000
+    },
+    {
+        "Name":"Rahim",
+        "Age":22,
+        "Department":"Web",
+        "Salary":40000
+    },
+    {
+        "Name":"Karim",
+        "Age":26,
+        "Department":"AI",
+        "Salary":60000
+    },
+    {
+        "Name":"Sadia",
+        "Age":23,
+        "Department":"HR",
+        "Salary":35000
+    }
+]

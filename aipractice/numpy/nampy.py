@@ -149,8 +149,9 @@ arr=np.array([1,2,3])
 arr=np.array([1,2,3,4])
 print(arr.nbytes) #results in 32 (bytes)
 
-
-
+#axis=0
+arr=np.array([1,2,3,4])
+#print(arr.sum(axis=0)) #results in 10
 
 #this is a 6x8 matrix of random integers between 1 and 100
 arr = np.random.randint(1,100,(6,8))
@@ -171,3 +172,5 @@ print("Total Memory :", arr.nbytes)
 # 🔥 Reshape
 # 🔥 Flatten vs Ravel
 # 🔥 Broadcasting
+
+
